@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Buttons to trigger modals -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignModal">Assign Team and Role</button>
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#dailyPerformanceModal">Add Daily Performance</button>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#updatePersonalTargetModal">Update Personal Weekly Target</button>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#updateTeamTargetModal">Update Team Weekly Target</button>
+
+        <!-- Modals -->
+        <!-- Assign Team and Role Modal -->
+        <div class="modal fade" id="assignModal" tabindex="-1" role="dialog" aria-labelledby="assignModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assignModalLabel">Assign Staff to Team and Role</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Assign Form -->
+                        <form id="assignForm" action="/assign" method="post">
+                            <select id="staffName" name="staffName" class="form-control mb-2">
+                                {% for name in staff_names %}
+                                <option value="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="team" class="form-control mb-2">
+                                <option value="charlie">Charlie</option>
+                                <option value="delta">Delta</option>
+                            </select>
+                            <select name="role" class="form-control mb-2">
+                                <option value="pr">PR</option>
+                                <option value="tc">TC</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                            <input type="submit" value="Assign" class="btn btn-primary">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="dailyPerformanceModal" tabindex="-1" role="dialog" aria-labelledby="dailyPerformanceModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dailyPerformanceModalLabel">Add Daily Performance</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <!-- Form inside Modal -->
+                        <form action="/submit_performance" method="post">
+                            <div class="form-group">
+                                <label for="teamSelect">Team:</label>
+                                <select id="teamSelect" name="team" class="form-control">
+                                    <option value="charlie">Charlie</option>
+                                    <option value="delta">Delta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="roleSelect">Role:</label>
+                                <select id="roleSelect" name="role" class="form-control">
+                                    <option value="pr">PR</option>
+                                    <option value="tc">TC</option>
+                                    <option value="manager">Manager</option>
+
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="staffNameSelect">Staff Name:</label>
+                                <select id="staffNameSelect" name="staffName" class="form-control">
+                                    <!-- Options will be filled by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dateselec">Date</label>
+                                <input type="date" id="dateselec" name="date" class="form-control" required>
+                            </div>
+                            <div id="inputBoxes"></div>
+
+                            <!-- Additional fields for performance data -->
+                            <button type="submit" class="btn btn-primary">Submit Performance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="updatePersonalTargetModal" tabindex="-1" role="dialog" aria-labelledby="dailyPerformanceModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dailyPerformanceModalLabel">Update Personal Weekly Target</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form inside Modal -->
+                        <form action="/update_weekly_tar" method="post">
+                            <div class="form-group">
+                                <label for="teamSelect_">Team:</label>
+                                <select id="teamSelect_" name="team" class="form-control">
+                                    <option value="charlie">Charlie</option>
+                                    <option value="delta">Delta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="roleSelect_">Role:</label>
+                                <select id="roleSelect_" name="role" class="form-control">
+                                    <option value="pr">PR</option>
+                                    <option value="tc">TC</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="staffNameSelect__">Staff Name:</label>
+                                <select id="staffNameSelect__" name="staffName_" class="form-control">
+                                    <!-- Options will be filled by JS -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Week:</label>
+                                <input type="week" name="week" id="week_target" class="form-control" required>
+                            </div>
+                            <div id="inputBoxes_weektarget"></div>
+
+                            <!-- Additional fields for performance data -->
+                            <button type="submit" class="btn btn-primary">Submit Performance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="updateTeamTargetModal" tabindex="-1" role="dialog" aria-labelledby="dailyPerformanceModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dailyPerformanceModalLabel">Update Team Weekly Target</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form inside Modal -->
+                        <form action="/weeky_team_target" method="post">
+                            <div class="form-group">
+                                <label for="teamSelect">Team:</label>
+                                <select id="teamSelect" name="team" class="form-control">
+                                    <option value="charlie">Charlie</option>
+                                    <option value="delta">Delta</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Week:</label>
+                                <input type="week" name="week" id ="week_select"class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Points:</label>
+                                <input type="text" name="points" class="form-control" placeholder="Points" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Sales:</label>
+                                <input type="text" name="sales" class="form-control" placeholder="Sales" required>
+                            </div>
+                    
+                            <div class="form-group">
+                                <label>Visits:</label>
+                                <input type="text" name="visits" class="form-control" placeholder="Visits" required>
+                            </div>
+        
+                            <div id="inputBoxes_team"></div>
+
+                            <!-- Additional fields for performance data -->
+                            <button type="submit" class="btn btn-primary">Submit Performance</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional modals for daily performance, updating personal/target weekly targets would follow a similar structure -->
+    </div>
+
+    <!-- Include Bootstrap and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+    $(document).ready(function() {
+
+        $('#dateselec').change(function() {
+            updateStaffNames(); // Call updateInputBoxes when date changes
+        });
+
+        function updateStaffNames() {
+            var team = $('#teamSelect').val();
+            var role = $('#roleSelect').val();
+            var date = $('#dateselec').val(); 
+            console.log("Selected Date:", date);
+
+            $.post('/get_names', {team: team, role: role, date: date}, function(data) {
+                var staffNameSelect = $('#staffNameSelect');
+                staffNameSelect.empty(); // Remove existing options
+
+                $.each(data, function(index, name) {
+                    staffNameSelect.append($('<option>', {
+                        value: name,
+                        text: name
+                    }));
+                });
+            });
+        }
+
+        $('#teamSelect, #roleSelect').change(updateStaffNames);
+
+        // Trigger staff names update when modal opens
+        $('#dailyPerformanceModal').on('shown.bs.modal', function () {
+            updateStaffNames();
+        });
+        
+    });
+
+
+//////////
+   
+        $(document).ready(function() {
+           
+
+        function updateInputBoxes() {
+            var role = $('#roleSelect').val();
+            var inputBoxes = $('#inputBoxes');
+           
+            inputBoxes.empty(); // Remove existing input boxes
+    
+            if (role === "pr") {
+                // Show input boxes for PR role
+               
+                    inputBoxes.append(
+                    `
+                    <div class="form-group">
+                        <label>Visits:</label>
+                        <input type="text" name="visits" class="form-control" placeholder="Visits" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sales:</label>
+                        <input type="text" name="sales" class="form-control" placeholder="Sales" required>
+                    </div>
+
+                    <div class="form-group">
+                        <labe>Achived Points:</labe>
+                        <input type="text" name="points" class="form-control" placeholder="Achived Points" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Not Counted Sales:</label>
+                        <input type="text" name="not_counted_sale" class="form-control" placeholder="Not Counted Sales">
+                    </div>
+                    `);
+                
+            }else if(role === "tc"){
+
+                inputBoxes.append(
+                    `
+                    <div class="form-group">
+                        <label for="roleSelect">Visit Booked:</label>
+                        <input type="text" name="visit_booked" class="form-control" placeholder="Visit Booked">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="roleSelect">Leads:</label>
+                        <input type="text" name="leads" class="form-control" placeholder="Leads">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Sales:</label>
+                        <input type="text" name="sales" class="form-control" placeholder="Sales">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Calls:</label>
+                        <input type="text" name="calls" class="form-control" placeholder="Calls">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Not Counted Sales:</label>
+                        <input type="text" name="not_counted_sale" class="form-control" placeholder="Not Counted Sales">
+                    </div>
+                    `);
+            }else if(role === "manager"){
+
+                inputBoxes.append(
+                    `
+                    
+                    <div class="form-group">
+                        <label for="roleSelect">Visit Booked:</label>
+                        <input type="text" name="visit_booked" class="form-control" placeholder="Visit Booked">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="roleSelect">Leads:</label>
+                        <input type="text" name="leads" class="form-control" placeholder="Sales">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Sales:</label>
+                        <input type="text" name="sales" class="form-control" placeholder="Sales">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Calls:</label>
+                        <input type="text" name="calls" class="form-control" placeholder="Calls">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Visits:</label>
+                        <input type="text" name="visits" class="form-control" placeholder="Visits">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="roleSelect">Achived Points:</label>
+                        <input type="text" name="points" class="form-control" placeholder="Achived Points">
+                    </div>
+                    `);
+            }
+        }
+    
+        $('#roleSelect').change(updateInputBoxes);
+    
+        // Trigger input boxes update when modal opens
+        $('#dailyPerformanceModal').on('shown.bs.modal', function () {
+            updateInputBoxes();
+        });
+    });
+
+    ////////////////
+
+    $(document).ready(function() {
+        function updateStaffNames__() {
+            var team = $('#teamSelect_').val();
+            var role = $('#roleSelect_').val();
+
+            $.post('/get_names', {team: team, role: role}, function(data) {
+                var staffNameSelect = $('#staffNameSelect__');
+                staffNameSelect.empty(); // Remove existing options
+
+                $.each(data, function(index, name) {
+                    staffNameSelect.append($('<option>', {
+                        value: name,
+                        text: name
+                    }));
+                });
+                var currentStaffName = staffNameSelect.val();
+    
+                // Change the staff name
+                $('#staffName').val(currentStaffName);
+                get_staff_detail(currentStaffName);
+
+            });
+        }
+    
+        // Call the function to update staff names when team or role changes
+        $('#teamSelect_, #roleSelect_').change(updateStaffNames__);
+
+        // Trigger staff names update when modal opens
+        $('#updatePersonalTargetModal').on('shown.bs.modal', function () {
+            updateStaffNames__();
+        });
+        $('#staffNameSelect__').change(function() {
+            var selectedStaffName = $(this).val();
+            get_staff_detail(selectedStaffName);
+
+        });
+
+        $('#week_target').change(function() {
+            get_staff_detail($('#staffNameSelect__').val()); // Call get_staff_detail when week changes
+        });
+
+        function get_staff_detail(staff_name) {
+            
+
+            var team = $('#teamSelect_').val();
+            var role = $('#roleSelect_').val();
+            var week = $('#week_target').val();
+            console.log("+++++",week)
+            $.ajax({
+                url: '/get_staff_detail',
+                type: 'POST',
+                data: {
+                    staff_names: staff_name,
+                    team : team,
+                    role : role,
+                    week : week
+                },
+                success: function(response) {
+                    console.log(response)
+                    var responseLength = Object.keys(response).length;
+
+                    // Clear previous input boxes
+                    $('#inputBoxes_weektarget').empty();
+                    if (week !== "" ) {
+
+                    if (role === "pr") {
+                    // Append the input boxes
+                    $('#inputBoxes_weektarget').append(`
+                        
+
+                        <div class="form-group">
+                            <label>Points:</label>
+                            <input type="text" name="points" class="form-control" placeholder="Points" value="${response.points}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Sales:</label>
+                            <input type="text" name="sales" class="form-control" placeholder="Sales" value="${response.sales}" required>
+                        </div>
+                
+                        <div class="form-group">
+                            <label>Visits:</label>
+                            <input type="text" name="visits" class="form-control" placeholder="Visits" value="${response.visits}" required>
+                        </div>
+                    `);
+                } else if (role === "tc") {
+
+                    $('#inputBoxes_weektarget').append(`
+                        
+                        <div class="form-group">
+                            <label>Visits:</label>
+                            <input type="text" name="visits" class="form-control" placeholder="Visits" value="${response.visits}" required>
+                        </div>
+                    `);
+
+                }
+            }
+
+                },
+                
+                error: function(xhr, status, error) {
+                    console.error("Error:", error); // Log error to console
+                    
+                }
+            });
+        }
+    });
+
+  /////////////////////////////////
+
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Performance</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/details.css">
+
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="btns"> 
+            <button type="button" class="btn btn-primary" onclick="top_team('charlie')">Top Team</button>
+            <button type="button" class="btn btn-primary" onclick="get_team_data('pr')">Team Top PR</button>
+            <button type="button" class="btn btn-primary" onclick="get_team_data('tc')">Team Top TC</button>
+            <button type="button" class="btn btn-primary" onclick="get_overall_team_data('charlie','pr')">Get overall top PR</button>
+            <button type="button" class="btn btn-primary" onclick="get_overall_team_data('charlie','tc')">Get overall top TC</button>
+            <button type="button" class="btn btn-primary" onclick="">Internal Team Comparison</button>
+            <button type="button" class="btn btn-primary" onclick="">Both Team Comparison</button>
+        </div>
+        <div class="det">    
+
+            <div id="responseArea"></div>
+            <div id="select_list"></div>
+            <div id="loader" class="loader"></div>
+
+            <table id="table" class="table table-hover">
+                <thead>
+    
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+<script>
+   
+$(document).ready(function(){
+    $('#loader').hide(); 
+});
+
+//////////////// Team Top PR and TC ///////////////////////
+
+function get_team_data(role) {
+    document.getElementById("responseArea").style.opacity = "0";
+    document.getElementById("select_list").style.opacity = "0";
+    document.getElementById("table").style.opacity = "0";
+    $('#loader').show();
+    $.ajax({
+        url: '/get_teamname',
+        type: 'GET',
+        success: function(response) {
+            $('#loader').hide();
+
+            //console.log(response);
+            document.getElementById("responseArea").style.opacity = "1";
+
+            $('#responseArea').empty(); 
+            response.forEach(function(teamName) {
+                var button = $('<button type="button" class="btn btn-secondary"></button>').text(teamName);
+                button.click(function() {
+                    var teamName = $(this).text();
+                    top_pr_tc(teamName,role); 
+                });
+                $('#responseArea').append(button);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error(error); 
+        }
+    });
+}   
+
+function top_pr_tc(team,role){
+    $('#loader').show(); 
+
+    $.ajax({
+        url: '/team_data',
+        type: 'POST',
+        data: {
+            team : team
+        },
+        success: function(response) {
+            $('#loader').hide();
+            document.getElementById("select_list").style.opacity = "1";
+            //console.log(response);
+            $('#select_list').empty();
+            if (response.hasOwnProperty('datas')) {
+                
+                    Object.keys(response.datas).forEach(function(weekNumber) {
+                    var button = $('<button type="button" class="btn btn-secondary"></button>').text(weekNumber);
+
+                    button.click(function() {
+                        var clickedWeekNumber = $(this).text();
+                        func(team, role, clickedWeekNumber); 
+                    });
+                    $('#select_list').append(button);
+                });
+            }
+        },     
+        error: function(xhr, status, error) {
+            console.error("Error:", error); 
+        }
+    });
+}
+
+ function func(team, role, week) {
+    $('#loader').show(); 
+
+    $.ajax({
+        url: '/gettop_pr_tc',
+        type: 'POST',
+        data: {
+            team: team,
+            role: role,
+            week: week
+        },
+        success: function (response) {
+            document.getElementById("table").style.opacity = "1";
+            $('#loader').hide();
+            console.log(response);
+            var table = $('.table');
+            var tableHead = table.find('thead');
+            var tableBody = table.find('tbody');
+
+            tableHead.empty();
+            tableBody.empty();
+            if (role === 'pr'){
+            tableHead.append('<tr><th>Staff</th><th>Visits</th><th>Sales</th><th>Achived Points</th><th>Visit To Sale Ratio</th></tr>');
+
+            var staffArray = [];
+            $.each(response, function (staff, staffData) {
+                staffArray.push({
+                    staff: staff,
+                    sales: staffData.weekly_data.sales,
+                    visit_to_sale_ratio: staffData.weekly_data.visit_to_sale_ratio.toFixed(1) + '%'
+                });
+            });
+
+            staffArray.sort(function (a, b) {
+                return b.sales - a.sales;
+            });
+
+            staffArray.forEach(function (item) {
+                var staff = item.staff;
+                var staffData = response[staff];
+                var row = $('<tr>');
+                row.append($('<td>').text(staff));
+                row.append($('<td>').text(staffData.weekly_data.visits));
+                row.append($('<td>').text(staffData.weekly_data.sales));
+                row.append($('<td>').text(staffData.weekly_data.points));
+                if (staffData.weekly_data.visit_to_sale_ratio === 0){
+                    row.append($('<td>').text(staffData.weekly_data.visit_to_sale_ratio));
+
+                }else{
+                    row.append($('<td>').text(staffData.weekly_data.visit_to_sale_ratio.toFixed(1)));
+
+                }
+                tableBody.append(row);
+            });
+        }else if(role === 'tc'){
+
+            tableHead.append('<tr><th>Staff</th><th>Calls</th><th>Visit Booked</th><th>Leads</th><th>Sales</th><th>Lead To Sale</th></tr>');
+
+            var staffArray = [];
+            $.each(response, function (staff, staffData) {
+                staffArray.push({
+                    staff: staff,
+                    sales: staffData.weekly_data.sales
+                });
+            });
+
+            staffArray.sort(function (a, b) {
+                return b.sales - a.sales;
+            });
+
+            staffArray.forEach(function (item) {
+                var staff = item.staff;
+                var staffData = response[staff];
+                var row = $('<tr>');
+                row.append($('<td>').text(staff));
+                row.append($('<td>').text(staffData.weekly_data.calls));
+                row.append($('<td>').text(staffData.weekly_data.visit_booked));                                                                     
+                row.append($('<td>').text(staffData.weekly_data.leads));          
+                row.append($('<td>').text(staffData.weekly_data.sales));
+                if (staffData.weekly_data.lead_to_sale === 0){
+                    row.append($('<td>').text(staffData.weekly_data.lead_to_sale));
+
+                }else{
+                    row.append($('<td>').text(staffData.weekly_data.lead_to_sale.toFixed(1)));
+
+                }
+                tableBody.append(row);
+            });
+        }
+        },
+
+        error: function (xhr, status, error) {
+            console.error("Error:", error);
+        }
+    });
+}
+
+/////////////// Get Overall Top PR and TC /////////////////
+
+ function get_overall_team_data(team, role){
+    $('#loader').show(); 
+
+    document.getElementById("responseArea").style.opacity = "0";
+    $('#select_list').empty();
+    document.getElementById("table").style.opacity = "0";
+
+    $.ajax({
+        url: '/team_data',
+        type: 'POST',
+        data: {
+            team : team
+        },
+        success: function(response) {
+            $('#loader').hide();
+            document.getElementById("responseArea").style.opacity = "1";
+
+            $('#responseArea').empty();
+            
+            if (response.hasOwnProperty('datas')) { 
+                
+                    Object.keys(response.datas).forEach(function(weekNumber) {
+                    var button = $('<button type="button" class="btn btn-secondary"></button>').text(weekNumber);
+
+                    button.click(function() {
+                            
+                        var clickedWeekNumber = $(this).text();
+                        funct(role, clickedWeekNumber); 
+                    
+                    });
+                    $('#responseArea').append(button);
+                });
+            }
+        },     
+        error: function(xhr, status, error) {
+            console.error("Error:", error); 
+        }
+    });
+}
+
+function funct(role,week){
+    $('#loader').show(); 
+
+    $.ajax({
+        url: '/gettop_pr_tc_all_teams',
+        type: 'POST',
+        data: {
+            role : role,
+            week : week
+        },
+        success: function(response) {
+            $('#loader').hide();
+            document.getElementById("table").style.opacity = "1";
+
+            if (role === 'pr') {
+                
+                $('.table tbody').empty();
+            
+                var headerRow =
+                    '<tr>' +
+                    '<th scope="col">#</th>' +
+                    '<th scope="col">Team</th>' +
+                    '<th scope="col">Staff Name</th>' +
+                    '<th scope="col">Visits</th>' +
+                    '<th scope="col">Sales</th>' +
+                    '<th scope="col">Visit To Sale Ratio</th>' +
+                    '<th scope="col">Points</th>' +
+                    '</tr>';
+            
+                $('.table thead').html(headerRow);
+            
+                var staffData = [];
+            
+                Object.keys(response).forEach(function (staffName, index) {
+                    var weeklyData = response[staffName].weekly_data;
+            
+                    if (weeklyData) {
+                        Object.keys(weeklyData).forEach(function (metric) {
+                            var sales = weeklyData[metric].sales || 0;
+            
+                            staffData.push({
+                                staffName: staffName,
+                                metric: metric,
+                                visits: weeklyData[metric].visits || '',
+                                sales: sales,
+                                visit_to_sale_ratio: weeklyData[metric].visit_to_sale_ratio || '',
+                                points: weeklyData[metric].points || ''
+                            });
+                        });
+                    } else {
+                        console.error("Weekly data not available for:", staffName);
+                    }
+                });
+            
+                staffData.sort(function (a, b) {
+                    return b.sales - a.sales;
+                });
+            
+                staffData.forEach(function (data, index) {
+                    var row = '<tr>' +
+                        '<th scope="row">' + (index + 1) + '</th>' +
+                        '<td>' + data.staffName + '</td>' +
+                        '<td>' + data.metric + '</td>' +
+                        '<td>' + data.visits + '</td>' +
+                        '<td>' + data.sales + '</td>' +
+                        '<td>' + (data.visit_to_sale_ratio + '%' || '') + '</td>' +
+                        '<td>' + data.points + '</td>' +
+                        '</tr>';
+            
+                    $('.table tbody').append(row);
+                }); 
+            }
+
+            else if (role === 'tc') {
+                $('.table tbody').empty();
+            
+                var headerRow =
+                    '<tr>' +
+                    '<th scope="col">#</th>' +
+                    '<th scope="col">Team</th>' +
+                    '<th scope="col">Staff Name</th>' +
+                    '<th scope="col">Calls</th>' +
+                    '<th scope="col">Leads</th>' +
+                    '<th scope="col">Visit Booked</th>' +
+                    '<th scope="col">Sales</th>' +
+                    '</tr>';
+            
+                $('.table thead').html(headerRow);
+            
+                var staffData = [];
+            
+                Object.keys(response).forEach(function (staffName, index) {
+                    var weeklyData = response[staffName].weekly_data;
+            
+                    if (weeklyData) {   
+                        Object.keys(weeklyData).forEach(function (metric) {
+                            var sales = weeklyData[metric].sales || 0;
+            
+                            staffData.push({
+                                staffName: staffName,
+                                metric: metric,
+                                calls: weeklyData[metric].calls || '',
+                                leads: weeklyData[metric].leads || '',
+                                visit_booked: weeklyData[metric].visit_booked || '',
+                                sales: sales
+                            });
+                        });
+                    } else {
+                        console.error("Weekly data not available for:", staffName);
+                    }
+                });
+            
+                staffData.sort(function (a, b) {
+                    return b.sales - a.sales;
+                });
+            
+                staffData.forEach(function (data, index) {
+                    var row = '<tr>' +
+                        '<th scope="row">' + (index + 1) + '</th>' +
+                        '<td>' + data.staffName + '</td>' +
+                        '<td>' + data.metric + '</td>' +
+                        '<td>' + data.calls + '</td>' +
+                        '<td>' + data.leads + '</td>' +
+                        '<td>' + data.visit_booked + '</td>' +
+                        '<td>' + data.sales + '</td>' +
+                        '</tr>';
+            
+                    $('.table tbody').append(row);
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr, status, error);
+        }
+    });
+}
+
+/////////////////// Top Team ////////////////////////////
+
+function top_team(team){
+    $('#loader').show(); 
+
+    $('#select_list').empty();
+    document.getElementById("table").style.opacity = "0";
+
+    $.ajax({
+        url: '/team_data',
+        type: 'POST',
+        data: {
+            team : team
+        },
+        success: function(response) {
+            $('#loader').hide(); 
+
+            $('#responseArea').empty();
+            
+            if (response.hasOwnProperty('datas')) {
+                
+                    Object.keys(response.datas).forEach(function(weekNumber) {
+                    var button = $('<button type="button" class="btn btn-secondary"></button>').text(weekNumber);
+
+                    button.click(function() {
+                            
+                        var clickedWeekNumber = $(this).text();
+                        get_topteam(clickedWeekNumber)
+
+                    });
+                    $('#responseArea').append(button);
+                });
+            }
+        },
+    
+        error: function(xhr, status, error) {
+            console.error("Error:", error); 
+        }
+    });
+}
+
+function get_topteam(week) {
+    $('#loader').show(); 
+
+    $.ajax({
+        url: '/get_topteam',
+        type: 'POST',
+        data: {
+            week: week
+        },
+        success: function (response) {
+            document.getElementById("table").style.opacity = "1";
+            $('#loader').hide(); 
+
+            //console.log(response);
+            var dataArray = [];
+            for (var staffName in response) {
+                if (response.hasOwnProperty(staffName)) {
+                    var staffData = response[staffName];
+                    var obj = {
+                        staff: staffName,
+                        visits: staffData.visits,
+                        sales: staffData.sales,
+                        points: staffData.points,
+                        visit_to_sale_ratio: staffData.visit_to_sale_ratio.toFixed(1) + '%'
+                    };
+                    dataArray.push(obj);
+                }
+            }
+
+            dataArray.sort(function (a, b) {
+                return b.sales - a.sales;
+            });
+  
+            var table = $('.table');
+            var tableHead = table.find('thead');
+            var tableBody = table.find('tbody');
+            tableHead.empty();
+            tableBody.empty();
+
+            var headerRow = '<tr>' +
+                '<th>Team</th>' +
+                '<th>Visits</th>' +
+                '<th>Sales</th>' +
+                '<th>Points</th>' +
+                '<th>Visit To Sale Ratio</th>' +
+                '</tr>';
+            tableHead.append(headerRow);
+            dataArray.forEach(function (data, index) {
+                console.log("data is:", data)
+                var row = $('<tr>');
+                row.append($('<td>').text(data.staff));
+                row.append($('<td>').text(data.visits));
+                row.append($('<td>').text(data.sales));
+                row.append($('<td>').text(data.points));
+                row.append($('<td>').text(data.visit_to_sale_ratio));
+
+
+                tableBody.append(row);``
+            });
+        },
+
+        error: function (xhr, status, error) {
+            console.error("Error:", error);
+        }
+    });
+}                                               
+
+ </script>

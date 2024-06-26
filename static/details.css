@@ -1,0 +1,61 @@
+body {
+    margin: 0;
+    background-color: #0f0f0f;
+}
+
+.btns{
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.det{
+    padding:1px 16px;
+    height:1000p
+}
+
+#responseArea{
+    display: flex;
+    justify-content:center;
+    gap: 10px;
+    padding-top: 40px;
+}
+
+#select_list{
+    display: flex;
+    justify-content:center;
+    gap: 10px;
+    padding-top: 40px;
+}
+
+.table{
+    margin-top: 40px;
+    color: #ffffff;
+    text-align: center;
+}
+
+#table tr:hover {
+    background-color: #1d1d1d;
+    color: #ffffff;
+}
+
+.topteam_table{
+    margin-top: 60px;
+    color: #ffffff;
+    margin-right: 10px;
+}
+.loader {
+    border: 8px solid #f3f3f3; /* Light grey */
+    border-top: 8px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+    margin-top: 20px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
